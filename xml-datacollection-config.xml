@@ -1,0 +1,14 @@
+<xml-datacollection-config rrdRepository="/opt/opennms/share/rrd/snmp/" xmlns="http://xmlns.opennms.org/xsd/config/xml-datacollection">
+    <xml-collection name="luftdaten.info-sensor">
+        <rrd step="145">
+            <rra>RRA:AVERAGE:0.5:1:20160</rra>
+            <rra>RRA:AVERAGE:0.5:12:14880</rra>
+            <rra>RRA:AVERAGE:0.5:288:3660</rra>
+            <rra>RRA:MAX:0.5:288:3660</rra>
+            <rra>RRA:MIN:0.5:288:3660</rra>
+        </rrd>
+        <xml-source url="http://{ipaddr}/data.json">
+            <import-groups>xml-datacollection/luftdaten.info-sensor.xml</import-groups>
+        </xml-source>
+    </xml-collection>
+</xml-datacollection-config>

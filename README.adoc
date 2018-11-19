@@ -1,0 +1,128 @@
+= Data Collection for Luftdaten.info Sensors
+
+The environmental sensors from the Open Source project Lufdaten.info provide data in a JSON format over HTTP in http://<sensor-ip>/data.json.
+This repository provides the configuration to collect these data with OpenNMS.
+
+A sample output of the JSON data looks like this:
+
+[source, json]
+----
+{
+  "software_version": "NRZ-2018-115",
+  "age": "83",
+  "sensordatavalues": [
+    {
+      "value_type": "SDS_P1",
+      "value": "7.47"
+    },
+    {
+      "value_type": "SDS_P2",
+      "value": "5.70"
+    },
+    {
+      "value_type": "temperature",
+      "value": "17.00"
+    },
+    {
+      "value_type": "humidity",
+      "value": "68.10"
+    },
+    {
+      "value_type": "samples",
+      "value": "842291"
+    },
+    {
+      "value_type": "min_micro",
+      "value": "170"
+    },
+    {
+      "value_type": "max_micro",
+      "value": "27361"
+    },
+    {
+      "value_type": "signal",
+      "value": "-75"
+    }
+  ]
+}
+----
+
+== Requirements
+
+* Running Luftdaten.info sensor
+* OpenNMS Horizon/Meridian
+* Installed  with XML data collector plugin
+* The config example has OpenNMS installed in `/opt/opennms`, on Debian/Ubuntu change the path accordingly to `/usr/share/opennms`
+
+The XML data collector plugin is not installed by default and can be installed with
+
+.Installing XML collector plugin
+[source, bash]
+----
+yum install opennms-plugin-protocol-xml
+apt-get install opennms-plugin-protocol-xml
+----
+
+After installing the plugin it is required to restart OpenNMS with
+
+[source, bash]
+----
+systemctl restart opennms
+----
+
+== Install data collection configuration
+
+Checkout this repository with git or copy the files manually using the GitHub raw link to download the configuration files.
+
+.Install configuration for metrics collection and RRD graph definitions
+[source, bash]
+----
+git clone https://github.com/opennms-config-modules/luftdaten.info-sensor.git
+cd luftdaten.info-sensor
+cp snmp-graph.properties.d/luftdaten.info-sensor-graph.properties /opt/opennms/etc/snmp-graph.properties.d
+cp xml-datacollection/luftdaten.info-sensor.xml.xml /opt/opennms/etc/xml-datacollection
+----
+
+== Configure Collectd
+
+Add the following lines `collectd-configuration.xml` in the `in the default installed ``example1` package.
+The `collector service` needs to be added on the very end of the file, it tells OpenNMS to the XML collector for this type of service.
+Enable the _JSON_ Handler to allow parsing the output accordingly.
+
+.Create a new collection service for the Elasticsearch Cluster metrics
+[source, xml]
+----
+<service name="JSON-Data-Luftdaten.info" interval="145000" user-defined="false" status="on">
+    <parameter key="collection" value="luftdaten.info-sensor" />
+    <parameter key="handler-class" value="org.opennms.protocols.json.collector.DefaultJsonCollectionHandler"/>
+</service>
+
+<collector service="JSON-Data-Luftdaten.info" class-name="org.opennms.protocols.xml.collector.XmlCollector"/>
+----
+
+Create the `xml-datacollection-config.xml` which defines RRD configuration.
+
+[source, xml]
+----
+<xml-datacollection-config rrdRepository="/opt/opennms/share/rrd/snmp/" <1>
+                           xmlns="http://xmlns.opennms.org/xsd/config/xml-datacollection">
+    <xml-collection name="luftdaten.info-sensor">
+        <rrd step="145">
+            <rra>RRA:AVERAGE:0.5:1:20160</rra>
+            <rra>RRA:AVERAGE:0.5:12:14880</rra>
+            <rra>RRA:AVERAGE:0.5:288:3660</rra>
+            <rra>RRA:MAX:0.5:288:3660</rra>
+            <rra>RRA:MIN:0.5:288:3660</rra>
+        </rrd>
+        <xml-source url="http://{ipaddr}/data.json">
+            <import-groups>xml-datacollection/luftdaten.info-sensor.xml</import-groups>
+        </xml-source>
+    </xml-collection>
+</xml-datacollection-config>
+----
+<1> OpenNMS home relative path to persist RRD files
+<2> URL to Elasticsearch Cluster statistics ReST service
+<3> Instead of `YOUR-SERVER` you can also use `{ipaddr}` which is replaced with the IP interface address of the assigned `JSON-Data-Luftdaten.info` service
+<4> Include pre-configured metrics configuration for data collection
+
+Restart OpenNMS and provision your sensors and assign on the sensors IP interface a service named `JSON-Data-Luftdaten.info`.

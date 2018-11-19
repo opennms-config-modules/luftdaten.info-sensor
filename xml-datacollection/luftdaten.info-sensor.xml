@@ -1,0 +1,13 @@
+<xml-groups>
+    <xml-group name="air-quality" resource-type="node" resource-xpath="/">
+        <xml-object name="sds_p1" type="gauge" xpath="sensordatavalues[@value_type=&quot;SDS_P1&quot;]/value"/>
+        <xml-object name="sds_p2" type="gauge" xpath="sensordatavalues[@value_type=&quot;SDS_P2&quot;]/value"/>
+    </xml-group>
+    <xml-group name="climate" resource-type="node" resource-xpath="/">
+        <xml-object name="temperature" type="gauge" xpath="sensordatavalues[@value_type=&quot;temperature&quot;]/value"/>
+        <xml-object name="humidity" type="gauge" xpath="sensordatavalues[@value_type=&quot;humidity&quot;]/value"/>
+    </xml-group>
+    <xml-group name="wifi" resource-type="node" resource-xpath="/">
+        <xml-object name="signal" type="gauge" xpath="sensordatavalues[@value_type=&quot;signal&quot;]/value"/>
+    </xml-group>
+</xml-groups>
