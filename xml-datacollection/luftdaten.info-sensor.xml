@@ -10,4 +10,9 @@
     <xml-group name="wifi" resource-type="node" resource-xpath="/">
         <xml-object name="signal" type="gauge" xpath="sensordatavalues[@value_type=&quot;signal&quot;]/value"/>
     </xml-group>
+    <xml-group name="bme280" resource-type="node" resource-xpath="/">
+        <xml-object name="BME280_pressure" type="gauge" xpath="sensordatavalues[@value_type=&quot;BME280_pressure&quot;]/value"/>
+        <xml-object name="BME280_temperature" type="gauge" xpath="sensordatavalues[@value_type=&quot;BME280_temperature&quot;]/value"/>
+        <xml-object name="BME280_humidity" type="gauge" xpath="sensordatavalues[@value_type=&quot;BME280_humidity&quot;]/value"/>
+    </xml-group>
 </xml-groups>
